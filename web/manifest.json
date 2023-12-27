@@ -1,0 +1,35 @@
+{
+    "name": "voicify",
+    "short_name": "voicify",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#5546ff",
+    "theme_color": "#5546ff",
+    "description": "Voicify, the ultimate app designed for live speech-to-text conversion, storage, and collaboration. Whether you're in a classroom, a conference, or a brainstorming session, Voicify empowers you to capture, edit, and share spoken words effortlessly.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
