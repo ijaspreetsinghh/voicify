@@ -9,7 +9,7 @@ import 'package:voicify/view/styles/colors/app_colors.dart';
 import 'package:voicify/view/styles/typorgraphy/typography.dart';
 
 class EditingSession extends StatefulWidget {
-  EditingSession({super.key, required this.session});
+  const EditingSession({super.key, required this.session});
   final Session session;
 
   @override
@@ -64,7 +64,7 @@ class _EditingSessionState extends State<EditingSession> {
                             (element) => element.id == widget.session.id);
                         await database.transaction((txn) async {
                           int id = await txn.rawInsert(
-                              'INSERT INTO Sessions(title, body, created_on) VALUES("$title", "${body}","${dateTime.millisecondsSinceEpoch}"  )');
+                              'INSERT INTO Sessions(title, body, created_on) VALUES("$title", "$body","${dateTime.millisecondsSinceEpoch}"  )');
 
                           appController.allSessions.add(Session(
                               id: id,

@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:voicify/controller/controller.dart';
 import 'package:voicify/main.dart';
@@ -24,8 +27,83 @@ class _ListeningPageState extends State<ListeningPage>
   final RxBool _isListening = false.obs;
   final RxDouble _confidence = 1.0.obs;
   final AppController appController = Get.put(AppController());
+  RxBool available = false.obs;
+  storeSession() async {
+    String randomTitle;
+    if (_lastWords.value.trim().isNotEmpty) {
+      if (_lastWords.value.trim().length > 5) {
+        randomTitle = _lastWords.value.split(' ').take(5).toList().join(' ');
+      } else {
+        randomTitle = _lastWords.value;
+      }
+      final ts = DateTime.now().millisecondsSinceEpoch;
+      await database.transaction((txn) async {
+        int id = await txn.rawInsert(
+            'INSERT INTO Sessions(title, body, created_on) VALUES("$randomTitle", "${_lastWords.value}","$ts"  )');
+
+        appController.allSessions.add(Session(
+            id: id,
+            title: randomTitle,
+            body: _lastWords.value,
+            createdOn: DateTime.fromMillisecondsSinceEpoch(ts)));
+      });
+    }
+  }
+
+  initSpeech() async {
+    available.value = await _speechToText.initialize(
+      onStatus: (status) async {
+        if (status == 'listening') {
+          _isListening.value = true;
+        }
+        if (status == 'notListening') {
+          // _isListening.value = false;
+
+          // _speechToText.stop();
+
+          // storeSession();
+        }
+        if (status == 'done') {
+          _isListening.value = false;
+          _speechToText.stop();
+
+          storeSession();
+        }
+      },
+      onError: (error) {
+        _speechToText.stop();
+        _isListening.value = false;
+        Get.snackbar(
+          'Error',
+          error.errorMsg,
+          titleText: const MyText(
+            'Error',
+            color: Colors.red,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+          duration: const Duration(seconds: 2),
+          messageText: MyText(
+            error.errorMsg,
+            color: AppColors.blackText,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    initSpeech();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Obx(() => AvatarGlow(
@@ -42,7 +120,7 @@ class _ListeningPageState extends State<ListeningPage>
                   borderSide: BorderSide.none,
                 ),
                 backgroundColor: AppColors.primary,
-                onPressed: _listen,
+                onPressed: listen,
                 tooltip: 'Listen',
                 child: Icon(
                   _isListening.value ? Icons.mic : Icons.mic_off,
@@ -132,62 +210,15 @@ class _ListeningPageState extends State<ListeningPage>
     );
   }
 
-  void _listen() async {
+  @override
+  bool get wantKeepAlive => true;
+  void listen() async {
+    _lastWords.value = '';
     var microphonePermisison = await Permission.microphone.status;
 
     if (microphonePermisison.isGranted) {
       if (!_isListening.value) {
-        bool available = await _speechToText.initialize(
-          onStatus: (status) async {
-            if (status == 'listening') {
-              _isListening.value = true;
-            }
-            if (status == 'notListening') {
-              _isListening.value = false;
-            }
-            if (status == 'done') {
-              _isListening.value = false;
-
-              String randomTitle;
-              if (_lastWords.value.trim().length > 5) {
-                randomTitle =
-                    _lastWords.value.split(' ').take(5).toList().join(' ');
-              } else {
-                randomTitle = _lastWords.value;
-              }
-              final ts = DateTime.now().millisecondsSinceEpoch;
-              await database.transaction((txn) async {
-                int id = await txn.rawInsert(
-                    'INSERT INTO Sessions(title, body, created_on) VALUES("$randomTitle", "${_lastWords.value}","${ts}"  )');
-
-                appController.allSessions.add(Session(
-                    id: id,
-                    title: randomTitle,
-                    body: _lastWords.value,
-                    createdOn: DateTime.fromMillisecondsSinceEpoch(ts)));
-              });
-            }
-          },
-          onError: (error) => Get.snackbar(
-            'Error',
-            error.errorMsg,
-            titleText: const MyText(
-              'Error',
-              color: Colors.red,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-            duration: const Duration(seconds: 2),
-            messageText: MyText(
-              error.errorMsg,
-              color: AppColors.blackText,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        );
-
-        if (available) {
+        if (available.value) {
           _isListening.value = true;
 
           _speechToText.listen(
@@ -196,7 +227,8 @@ class _ListeningPageState extends State<ListeningPage>
 
               _confidence.value = result.confidence;
             },
-            listenMode: ListenMode.dictation,
+            cancelOnError: true,
+            listenMode: ListenMode.confirmation,
           );
         }
       } else {
@@ -225,8 +257,4 @@ class _ListeningPageState extends State<ListeningPage>
       await Permission.microphone.request();
     }
   }
-
-  @override
-  // TODO: implement wantKeepAlive
-  bool get wantKeepAlive => true;
 }

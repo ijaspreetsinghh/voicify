@@ -8,56 +8,91 @@ import 'package:voicify/view/styles/colors/app_colors.dart';
 import 'package:voicify/view/styles/typorgraphy/typography.dart';
 import 'package:voicify/view/widgets/my_card.dart';
 
-class AllSessions extends StatelessWidget {
+class AllSessions extends StatefulWidget {
   AllSessions({
     super.key,
   });
+
+  @override
+  State<AllSessions> createState() => _AllSessionsState();
+}
+
+class _AllSessionsState extends State<AllSessions>
+    with AutomaticKeepAliveClientMixin {
   final AppController appController = Get.put(AppController());
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Obx(
-        () {
-          appController.allSessions
-              .sort((a, b) => b.createdOn.compareTo(a.createdOn));
-          return appController.allSessions.isEmpty
-              ? Container(
-                  margin: const EdgeInsets.symmetric(vertical: 24),
-                  height: Get.height * .85,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(
-                        height: Get.height * .3,
-                      ),
-                      const Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            MyText(
-                              'No Session',
-                              fontSize: 24,
-                              color: AppColors.bgGreyDark,
-                              fontWeight: FontWeight.w600,
-                              textAlign: TextAlign.center,
-                            )
-                          ]),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(24),
-                  itemCount: appController.allSessions.length,
-                  itemBuilder: (context, index) => MyCard(
-                    bgColor: AppColors.white,
-                    outlineColor: AppColors.lightGrey,
-                    child: MySession(
-                      session: appController.allSessions[index],
-                      appController: appController,
+    super.build(context);
+    return Scaffold(
+      backgroundColor: AppColors.white,
+      appBar: AppBar(
+        backgroundColor: AppColors.white,
+        leading: Row(
+          children: [
+            InkWell(
+              onTap: () => Get.back(),
+              child: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: AppColors.blackText,
+              ),
+            ).paddingOnly(left: 24),
+          ],
+        ),
+        centerTitle: true,
+        title: const MyText(
+          'Previous Sessions',
+          color: AppColors.blackText,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      body: SafeArea(
+        child: Obx(
+          () {
+            appController.allSessions
+                .sort((a, b) => b.createdOn.compareTo(a.createdOn));
+            return appController.allSessions.isEmpty
+                ? Container(
+                    margin: const EdgeInsets.symmetric(vertical: 24),
+                    height: Get.height * .85,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SizedBox(
+                          height: Get.height * .3,
+                        ),
+                        const Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              MyText(
+                                'No Session',
+                                fontSize: 24,
+                                color: AppColors.bgGreyDark,
+                                fontWeight: FontWeight.w600,
+                                textAlign: TextAlign.center,
+                              )
+                            ]),
+                      ],
                     ),
-                  ).marginOnly(bottom: 16),
-                );
-        },
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(24),
+                    itemCount: appController.allSessions.length,
+                    itemBuilder: (context, index) => MyCard(
+                      bgColor: AppColors.white,
+                      outlineColor: AppColors.lightGrey,
+                      child: MySession(
+                        session: appController.allSessions[index],
+                        appController: appController,
+                      ),
+                    ).marginOnly(bottom: 16),
+                  );
+          },
+        ),
       ),
     );
   }
@@ -66,7 +101,7 @@ class AllSessions extends StatelessWidget {
 }
 
 class MySession extends StatelessWidget {
-  MySession({
+  const MySession({
     super.key,
     required this.session,
     required this.appController,

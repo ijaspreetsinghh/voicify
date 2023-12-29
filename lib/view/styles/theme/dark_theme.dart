@@ -9,7 +9,7 @@ final darkTheme = ThemeData.dark(
     seedColor: AppColors.primary,
     background: AppColors.bgGreyDark,
   ),
-  primaryTextTheme: TextTheme(
+  primaryTextTheme: const TextTheme(
     bodyLarge: TextStyle(
       color: AppColors.white,
     ),

@@ -7,7 +7,7 @@ Future<void> deleteSessionRecord({required int id}) async {
 
 Future<void> initializeDatabase() async {
   var databasesPath = await getDatabasesPath();
-  String path = '${databasesPath}/sessions.db';
+  String path = '$databasesPath/sessions.db';
 
   // open the database
   database = await openDatabase(path, version: 1,

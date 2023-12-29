@@ -1,13 +1,10 @@
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:voicify/models/session.dart';
-import 'package:voicify/view/pages/all_sessions.dart';
 import 'package:voicify/view/styles/theme/dark_theme.dart';
 import 'package:voicify/view/styles/theme/light_theme.dart';
 
 class AppController extends GetxController {
-  RxInt currentIndex = 0.obs;
-
   RxBool get isDarkMode => false.obs;
   RxList<Session> allSessions = <Session>[].obs;
   final _icon = '🌙'.obs; // Moon emoji for dark mode
